@@ -1,0 +1,12 @@
+file(GLOB_RECURSE SANDBOX_SRC CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+)
+
+add_executable(SandboxApp ${SANDBOX_SRC})
+
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SANDBOX_SRC})
+
+target_link_libraries(SandboxApp PRIVATE TraceREngine)
+
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT SandboxApp)

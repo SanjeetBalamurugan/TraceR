@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "Utils/vec3.h"
-#include "HardwareRT/RayTracer.h"
+#include "SoftwareRT/RayTracer.h"
 
 static void GLFWFrameSizeCallback(GLFWwindow *window, int width, int height)
 {

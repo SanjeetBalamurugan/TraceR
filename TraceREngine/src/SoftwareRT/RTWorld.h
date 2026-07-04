@@ -1,5 +1,6 @@
 #pragma once
 #include "Hitable.h"
+#include "Utils/Intervals.h"
 
 #include <vector>
 #include <memory>
@@ -24,13 +25,15 @@ public:
         m_WorldObjects.push_back(obj);
     }
 
-    bool hit(const Ray& r, double ray_tmin, double ray_tmax, HitData& rec) const override {
+    bool hit(const Ray& r, Interval r_interval, HitData& rec) const override {
+        double ray_tmin = r_interval.min;
+
         HitData temp_rec;
         bool hit_anything = false;
-        auto closest_so_far = ray_tmax;
+        auto closest_so_far = r_interval.max;
 
         for (const auto& object : m_WorldObjects) {
-            if (object->hit(r, ray_tmin, closest_so_far, temp_rec)) {
+            if (object->hit(r, Interval(ray_tmin, closest_so_far), temp_rec)) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
                 rec = temp_rec;

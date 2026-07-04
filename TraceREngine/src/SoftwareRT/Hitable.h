@@ -1,5 +1,6 @@
 #pragma once
 #include "Utils/vec3.h"
+#include "Utils/Intervals.h"
 #include "Ray.h"
 
 struct HitData
@@ -21,7 +22,7 @@ class Hitable
 {
 public:
     virtual ~Hitable() = default;
-    virtual bool hit(const Ray &r, double ray_tmin, double ray_tmax, HitData &rec) const = 0;
+    virtual bool hit(const Ray &r, Interval r_interval, HitData &rec) const = 0;
 };
 
 class Sphere : public Hitable
@@ -29,8 +30,10 @@ class Sphere : public Hitable
 public:
     Sphere(const vec3 &center, double radius) : center(center), radius(std::fmax(0, radius)) {}
 
-    bool hit(const Ray &r, double ray_tmin, double ray_tmax, HitData &rec) const override
+    bool hit(const Ray &r, Interval r_interval, HitData &rec) const override
     {
+        double ray_tmin = r_interval.min;
+        double ray_tmax = r_interval.max;
         vec3 oc = center - r.origin();
         auto a = r.direction().length_squared();
         auto h = dot(r.direction(), oc);
@@ -43,10 +46,10 @@ public:
         // Suitable t Value within t_min, t_max
         auto sqrtd = std::sqrt(discriminant);
         auto root = (h - sqrtd) / a;
-        if (root <= ray_tmin || ray_tmax <= root)
+        if (!r_interval.surrounds(root))
         {
             root = (h + sqrtd) / a;
-            if (root <= ray_tmin || ray_tmax <= root)
+            if (!r_interval.surrounds(root))
                 return false;
         }
 

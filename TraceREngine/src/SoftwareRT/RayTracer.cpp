@@ -4,11 +4,12 @@
 #include "Ray.h"
 #include "Hitable.h"
 #include "Utils/constants.h"
+#include "Utils/Intervals.h"
 
 vec3 RayTracer::FinalRayColor(Ray r, const RTWorld& world)
 {
     HitData rec;
-    if (world.hit(r, 0, infinity, rec)) {
+    if (world.hit(r, Interval(0, infinity), rec)) {
         return 0.5 * (rec.normal + vec3(1,1,1));
     }
 

@@ -5,12 +5,18 @@
 #include "Hitable.h"
 #include "Utils/constants.h"
 #include "Utils/Intervals.h"
+#include "Utils/helpers.h"
 
-vec3 RayTracer::FinalRayColor(Ray r, const RTWorld& world)
+vec3 RayTracer::FinalRayColor(Ray r, const RTWorld& world, int currBounce)
 {
+    // Exceeded Max bounce
+    if (currBounce <= 0)
+        return vec3(0,0,0);
+
     HitData rec;
-    if (world.hit(r, Interval(0, infinity), rec)) {
-        return 0.5 * (rec.normal + vec3(1,1,1));
+    if (world.hit(r, Interval(0.001, infinity), rec)) {
+        vec3 direction = random_on_hemisphere(rec.normal) * random_unit_vector();
+        return 0.1 * FinalRayColor(Ray(rec.hitPoint, direction), world, currBounce - 1);
     }
 
     vec3 unit_direction = unit_vector(r.direction());
@@ -28,7 +34,7 @@ void RayTracer::Draw(std::vector<unsigned char> &buffer, int width, int height)
 {
     m_Camera.Render(m_World, width, height, buffer,
         [this](const Ray& ray) {
-            return this->FinalRayColor(ray, this->m_World);
+            return this->FinalRayColor(ray, this->m_World, this->max_bounces);
         }
     );
 }

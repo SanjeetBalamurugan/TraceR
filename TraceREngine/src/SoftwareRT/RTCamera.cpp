@@ -1,5 +1,13 @@
 #include "RTCamera.h"
 
+inline double linear_to_gamma(double linear_component)
+{
+    if (linear_component > 0)
+        return std::sqrt(linear_component);
+
+    return 0;
+}
+
 void RTCamera::UpdateCameraConsts(int width, int height)
 {
     aspect_ratio = width / height;
@@ -19,9 +27,9 @@ void RTCamera::UpdateCameraConsts(int width, int height)
 
 void RTCamera::DrawPixel(std::vector<unsigned char> &buffer, int width, int x, int y, const vec3 &pixel_color)
 {
-    int rbyte = int(255.999 * pixel_color.x());
-    int gbyte = int(255.999 * pixel_color.y());
-    int bbyte = int(255.999 * pixel_color.z());
+    int rbyte = int(255.999 * linear_to_gamma(pixel_color.x()));
+    int gbyte = int(255.999 * linear_to_gamma(pixel_color.y()));
+    int bbyte = int(255.999 * linear_to_gamma(pixel_color.z()));
 
     int pixel_index = (y * width + x) * 3;
 
@@ -30,7 +38,6 @@ void RTCamera::DrawPixel(std::vector<unsigned char> &buffer, int width, int x, i
     buffer[pixel_index + 2] = static_cast<unsigned char>(bbyte);
 }
 
-// i is width, j is height
 Ray RTCamera::GetRayAT(int i, int j) const
 {
     vec3 offset = SampleSquare();

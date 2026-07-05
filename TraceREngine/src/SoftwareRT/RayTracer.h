@@ -13,9 +13,11 @@ private:
     RayTracer() {}
     ~RayTracer() = default;
 
-    static vec3 FinalRayColor(Ray r, const RTWorld& world);
+    static vec3 FinalRayColor(Ray r, const RTWorld& world, int currBounce);
     RTWorld m_World;
     RTCamera m_Camera;
+
+    int max_bounces = 5;
 public:
     RayTracer(const RayTracer&) = delete;
     RayTracer& operator=(const RayTracer&) = delete;

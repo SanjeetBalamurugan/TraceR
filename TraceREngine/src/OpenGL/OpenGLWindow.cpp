@@ -15,8 +15,6 @@ static void GLFWFrameSizeCallback(GLFWwindow *window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-
-
 void OpenGLWindow::OnInit()
 {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

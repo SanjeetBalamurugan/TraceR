@@ -7,6 +7,7 @@
 #include "Utils/vec3.h"
 #include <functional>
 
+#include "Utils/helpers.h"
 
 class TRACER_API RTCamera
 {
@@ -31,6 +32,9 @@ private:
     void UpdateCameraConsts(int width, int height);
     void DrawPixel(std::vector<unsigned char> &buffer, int width, int x, int y, const vec3 &pixel_color);
 
+    int samples_per_pixel = 8;
+    double pixel_samples_scale;
+
 public:
     RTCamera(int width, int height)
     {
@@ -42,6 +46,10 @@ public:
         UpdateCameraConsts(500, 500);
     }
 
+    Ray GetRayAT(int i, int j) const;
+    vec3 SampleSquare() const {
+        return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+    }
     void Render(const RTWorld &world, int width, int height, std::vector<unsigned char> &buffer, const std::function<vec3(const Ray&)>& finalRayColor);
 };
 

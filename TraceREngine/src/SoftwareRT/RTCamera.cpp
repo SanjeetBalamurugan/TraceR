@@ -13,6 +13,8 @@ void RTCamera::UpdateCameraConsts(int width, int height)
     pixel_delta_v = viewport_v / image_height;
     viewport_upper_left = camera_center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
     pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+    pixel_samples_scale = 1.0 / samples_per_pixel;
 }
 
 void RTCamera::DrawPixel(std::vector<unsigned char> &buffer, int width, int x, int y, const vec3 &pixel_color)
@@ -28,25 +30,43 @@ void RTCamera::DrawPixel(std::vector<unsigned char> &buffer, int width, int x, i
     buffer[pixel_index + 2] = static_cast<unsigned char>(bbyte);
 }
 
-void RTCamera::Render(const RTWorld &world, int width, int height,
-     std::vector<unsigned char> &buffer, const std::function<vec3(const Ray&)>& finalRayColor)
+// i is width, j is height
+Ray RTCamera::GetRayAT(int i, int j) const
+{
+    vec3 offset = SampleSquare();
+    vec3 pixel_sample = pixel00_loc
+                          + ((i + offset.x()) * pixel_delta_u)
+                          + ((j + offset.y()) * pixel_delta_v);
+    
+    vec3 ray_origin = camera_center;
+    vec3 ray_direction = pixel_sample - ray_origin;
+
+    return Ray(ray_origin, ray_direction);
+}
+
+void RTCamera::Render(
+    const RTWorld& world,
+    int width,
+    int height,
+    std::vector<unsigned char>& buffer,
+    const std::function<vec3(const Ray&)>& finalRayColor)
 {
     if (image_width != width || image_height != height)
         UpdateCameraConsts(width, height);
-    
-    double max_i = (width > 1) ? double(width - 1) : 1.0;
-    double max_j = (height > 1) ? double(height - 1) : 1.0;
 
-    for (int j = 0; j < height; j++)
+    for (int j = 0; j < height; ++j)
     {
-        double g_ratio = double(j) / max_j;
-        for (int i = 0; i < width; i++)
+        for (int i = 0; i < width; ++i)
         {
-            auto pixel_center = pixel00_loc + (i * pixel_delta_u) + (j * pixel_delta_v);
-            auto ray_direction = pixel_center - camera_center;
-            Ray r(camera_center, ray_direction);
+            vec3 pixel_color(0,0,0);
 
-            vec3 pixel_color = finalRayColor(r);
+            for (int s = 0; s < samples_per_pixel; ++s)
+            {
+                Ray ray = GetRayAT(i, j);
+                pixel_color += finalRayColor(ray);
+            }
+
+            pixel_color /= samples_per_pixel;
             DrawPixel(buffer, width, i, j, pixel_color);
         }
     }
